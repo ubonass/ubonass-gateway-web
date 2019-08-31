@@ -16,8 +16,8 @@ var app = express();
 app.use(express.static(path.join(__dirname, 'public')));
 
 var options = {
-    key  : fs.readFileSync('./cert/1875047_www.ubonass.com.key'),
-    cert : fs.readFileSync('./cert/1875047_www.ubonass.com.pem')
+    key  : fs.readFileSync('./cert/mycert.key'),
+    cert : fs.readFileSync('./cert/mycert.pem')
 }
 
 var https_server = https.createServer(options, app);
