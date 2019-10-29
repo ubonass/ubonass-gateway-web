@@ -1,4 +1,4 @@
-var server = "wss://ubonass.com:8989";
+var server = "wss://" + window.location.hostname + ":8989";
 
 VideoCall.init({debug: ["error", "warn", "log"]});
 

@@ -4,8 +4,7 @@ VideoRoom.init(initOptions);
 
 var logger = new Logger(initOptions);
 
-
-var server = "wss://ubonass.com:8989";
+var server = "wss://" + window.location.hostname + ":8989";
 
 var videoroom;
 var userName;
