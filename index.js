@@ -1,4 +1,3 @@
-
 var express = require('express');
 var http = require('http');
 var https = require('https');
@@ -18,11 +17,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 var options = {
     key  : fs.readFileSync('./cert/mycert.key'),
     cert : fs.readFileSync('./cert/mycert.pem')
-}
+};
 
 var https_server = https.createServer(options, app);
-https_server.listen(443, '0.0.0.0');
+https_server.listen(8443, '0.0.0.0');
 
 var http_server = http.createServer(app);
-http_server.listen(80, '0.0.0.0');
+http_server.listen(8080, '0.0.0.0');
 

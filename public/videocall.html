@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <title>Video Call</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="utf-8">
+    <link rel="shortcut icon" href="images/videocall_favicon.ico" type="image/x-icon">
+    <!-- Bootstrap -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/webrtc-adapter/6.4.0/adapter.min.js" ></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.7.2/jquery.min.js" ></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery.blockUI/2.70/jquery.blockUI.min.js" ></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.0.2/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.1.0/bootbox.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/spin.js/2.3.2/spin.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.3/toastr.min.js"></script>
+    <script type="text/javascript" src="js/Logger.js?randomId=<%=Math.random()%>"></script>
+    <script type="text/javascript" src="js/RemoteCloud.js?randomId=<%=Math.random()%>"></script>
+    <script type="text/javascript" src="js/PluginHandle.js?randomId=<%=Math.random()%>"></script>
+    <script type="text/javascript" src="js/WebRtcPeer.js?randomId=<%=Math.random()%>"></script>
+    <script type="text/javascript" src="js/VideoCall.js?randomId=<%=Math.random()%>"></script>
+    <script type="text/javascript" src="videocalldemo.js?randomId=<%=Math.random()%>"></script>
+
+    <script>
+        $(function () {
+            $(".navbar-static-top").load("navbar.html", function () {
+                $(".navbar-static-top li.dropdown").addClass("active");
+                $(".navbar-static-top a[href='videocall.html']").parent().addClass("active");
+            });
+            $(".footer").load("footer.html");
+        });
+    </script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.3.7/cerulean/bootstrap.min.css" type="text/css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.2/css/font-awesome.min.css" type="text/css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.3/toastr.css"/>
+    <link rel="stylesheet" href="css/style.css" type="text/css" media="screen">
+    <link rel="stylesheet" href="css/footer.css" type="text/css"/>
+
+</head>
+<body>
+
+    <!--<nav class="navbar navbar-default navbar-static-top">
+    </nav>-->
+
+    <nav class="navbar-default navbar-static-top">
+    </nav>
+
+    <div id="video-calling" class="container show">
+
+        <!--<div class="row">
+            <img src="images/video_globe_bg_transp_cropped.png" style="height: 48px">
+            &lt;!&ndash;<h3><span style="font-size: large;">WebRtc Video Call</span></h3>&ndash;&gt;
+        </div>-->
+
+        <!--<div class="row">
+            <h1 style="text-align: center"> Setup you info </h1>
+        </div>-->
+        <br>
+
+        <div class="container">
+            <div class="col-md-6">
+                <!--<div style="border: 1px solid #ddd">
+                    <div class="panel-body" id="videoleft">
+                        <video class="rounded centered"
+                               id="myvideo"
+                               width=480px height=360px autoplay playsinline muted="muted"/>
+                    </div>
+                </div>-->
+                <img src="images/banner-video@2x.png" style="width: 480px;height: 300px">
+            </div>
+
+            <div class="col-md-6">
+
+                <h3 id="userName"><span style="font-size: medium;"></span></h3>
+                <hr>
+
+                <div class="row">
+                    <form class="form-inline">
+                        <div class="form-group">
+                            <label for="audio-device">Audio device:</label>
+                            <select id="audio-device" class="form-control" style="width: 320px"></select>
+                        </div>
+                    </form>
+                    <hr>
+                </div>
+
+                <div class="row">
+                    <form class="form-inline">
+                        <div class="form-group">
+                            <label for="video-device">Video device:</label>
+                            <select id="video-device" class="form-control" style='width:320px'></select>
+                        </div>
+                    </form>
+                    <hr>
+                </div>
+
+                <div class="row">
+                    <form class="form-inline">
+                        <div class="form-group">
+                            <label for="peerName">Target Name:</label>
+                            <input type="text" class="form-control" id="peerName" style="width: 320px"
+                                   placeholder="请输入名称">
+                        </div>
+                    </form>
+                    <hr>
+                </div>
+
+            </div>
+        </div>
+
+        <br>
+
+        <div class="container">
+            <div class="col-md-12">
+                <button type="button" class="btn btn-success btn-lg btn-block"
+                        autocomplete="off" id="call">Call
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="video-talking" class="container hide">
+        <br>
+        <div class="col-md-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Local Stream
+                        <div class="btn-group btn-group-xs pull-right">
+                            <button id="toggleaudio" class="btn btn-danger" autocomplete="off">
+                                Disable audio
+                            </button>
+                            <button id="togglevideo" class="btn btn-danger" autocomplete="off">
+                                Disable video
+                            </button>
+                            <div class="btn-group btn-group-xs">
+                                <button id="bitrateset" autocomplete="off" class="btn btn-primary dropdown-toggle"
+                                        data-toggle="dropdown">
+                                    Bandwidth
+                                    <span class="caret"></span>
+                                </button>
+                                <ul id="bitrate" class="dropdown-menu" role="menu">
+                                    <li><a href="#" id="0">No limit</a></li>
+                                    <li><a href="#" id="128">Cap to 128kbit</a></li>
+                                    <li><a href="#" id="256">Cap to 256kbit</a></li>
+                                    <li><a href="#" id="512">Cap to 512kbit</a></li>
+                                    <li><a href="#" id="1024">Cap to 1mbit</a></li>
+                                    <li><a href="#" id="1500">Cap to 1.5mbit</a></li>
+                                    <li><a href="#" id="2000">Cap to 2mbit</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </h3>
+                </div>
+                <div id="local-panel" class="panel-body" align="center">
+                    <video id="local-video" class="rounded centered" autoplay playsinline muted="muted">
+                    </video>
+                </div>
+            </div>
+            <div class="input-group margin-bottom-sm">
+                <span class="input-group-addon"><i class="fa fa-cloud-upload fa-fw"></i></span>
+                <input class="form-control" type="text" placeholder="Write a DataChannel message to your peer"
+                       autocomplete="off" id="datasend" onkeypress="return checkEnter(this, event);" disabled>
+
+                </input>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Remote Stream
+                        <span class="label label-info hide" id="callee"></span>
+                        <span class="label label-primary hide" id="curres"></span>
+                        <span class="label label-info hide" id="curbitrate"></span>
+                    </h3>
+                </div>
+                <div id="peer-panel" class="panel-body" align="center">
+                    <video class="rounded centered" id="peer-video" autoplay playsinline>
+                    </video>
+                </div>
+            </div>
+            <div class="input-group margin-bottom-sm">
+                <span class="input-group-addon"><i class="fa fa-cloud-download fa-fw"></i></span>
+                <input class="form-control" type="text" id="datarecv" disabled>
+
+                </input>
+            </div>
+        </div>
+
+    </div>
+    <div class="footer">
+    </div>
+</body>
+</html>

@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link rel="shortcut icon" href="images/videocall_favicon.ico" type="image/x-icon">
+    <title>ubonass gateway: Video Room</title>
+    <script type="text/javascript"
+            src="https://cdnjs.cloudflare.com/ajax/libs/webrtc-adapter/6.4.0/adapter.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+    <script type="text/javascript"
+            src="https://cdnjs.cloudflare.com/ajax/libs/jquery.blockUI/2.70/jquery.blockUI.min.js"></script>
+    <script type="text/javascript"
+            src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.0.2/js/bootstrap.min.js"></script>
+    <script type="text/javascript"
+            src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.1.0/bootbox.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/spin.js/2.3.2/spin.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.3/toastr.min.js"></script>
+    <script type="text/javascript" src="js/Logger.js?randomId=<%=Math.random()%>"></script>
+    <script type="text/javascript" src="js/RemoteCloud.js?randomId=<%=Math.random()%>"></script>
+    <script type="text/javascript" src="js/PluginHandle.js?randomId=<%=Math.random()%>"></script>
+    <script type="text/javascript" src="js/WebRtcPeer.js?randomId=<%=Math.random()%>"></script>
+    <script type="text/javascript" src="js/VideoRoom.js?randomId=<%=Math.random()%>"></script>
+    <script type="text/javascript" src="videosession.js?randomId=<%=Math.random()%>"></script>
+
+    <script>
+        $(function () {
+            $(".navbar-static-top").load("navbar.html", function () {
+                $(".navbar-static-top li.dropdown").addClass("active");
+                $(".navbar-static-top a[href='videosession.html']").parent().addClass("active");
+            });
+            $(".footer").load("footer.html");
+        });
+    </script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.3.7/cerulean/bootstrap.min.css"
+          type="text/css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.2/css/font-awesome.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.3/toastr.css"/>
+
+    <link rel="stylesheet" href="css/style.css" type="text/css"/>
+    <link rel="stylesheet" href="css/session.css" type="text/css"/>
+    <link rel="stylesheet" href="css/footer.css" type="text/css"/>
+
+</head>
+
+<body>
+
+
+<nav class="navbar navbar-default navbar-static-top">
+</nav>
+
+<div id="main-container" class="container">
+    <div id="join">
+        <!--<div id="img-div"><img src="images/video_globe_bg_transp_cropped.png"/></div>-->
+        <div id="join-dialog" class="jumbotron vertical-center">
+            <h1>Join a video session</h1>
+            <form class="form-group" onsubmit="joinSession(); return false">
+                <p>
+                    <label>Participant</label>
+                    <input class="form-control" type="text" id="userName" required>
+                </p>
+                <p>
+                    <label>Session</label>
+                    <input class="form-control" type="text" id="sessionId"
+                           required placeholder="numbers support only"
+                           maxlength="6" minlength="4">
+                </p>
+                <p class="text-center">
+                    <input class="btn btn-lg btn-success" type="submit" name="commit" value="Join!">
+                </p>
+            </form>
+        </div>
+    </div>
+
+    <div id="session" style="display: none;">
+        <div id="session-header">
+            <h1 id="session-title"></h1>
+            <input class="btn btn-large btn-danger" type="button"
+                   id="buttonLeaveSession"
+                   onmouseup="leaveSession()"
+                   value="Leave session">
+        </div>
+
+        <!--<div id="main-video" class="col-md-6"><p></p>
+            <video autoplay playsinline="true"></video>
+        </div>
+
+        <div id="video-container" class="col-md-6">
+        </div>-->
+        <!--<div class="col-md-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Local Video
+                        <span class="label label-primary" id="publisher">
+                        </span>
+                        <div class="btn-group btn-group-xs pull-right">
+                            <div class="btn-group btn-group-xs">
+                                <button id="bitrateset" autocomplete="off"
+                                        class="btn btn-primary dropdown-toggle"
+                                        data-toggle="dropdown">
+                                    Bandwidth<span class="caret"></span>
+                                </button>
+                                <ul id="bitrate" class="dropdown-menu" role="menu">
+                                    <li><a href="#" id="0">No limit</a></li>
+                                    <li><a href="#" id="128">Cap to 128kbit</a></li>
+                                    <li><a href="#" id="256">Cap to 256kbit</a></li>
+                                    <li><a href="#" id="512">Cap to 512kbit</a></li>
+                                    <li><a href="#" id="1024">Cap to 1mbit</a></li>
+                                    <li><a href="#" id="1500">Cap to 1.5mbit</a></li>
+                                    <li><a href="#" id="2000">Cap to 2mbit</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </h3>
+                </div>
+                <div class="panel-body" id="main-panel">
+                    <video autoplay playsinline="true"></video>
+                    <button class="btn btn-warning btn-xs" id="mute">
+                        Mute
+                    </button>
+                    <button class="btn btn-warning btn-xs" id="unpublish">
+                        Unpublish
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="row">
+                &lt;!&ndash;Remote Video #1&ndash;&gt;
+                <div class="col-md-6">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">Remote Video #1
+                                <span class="label label-info " id="remote1">
+
+                                </span>
+                            </h3>
+                        </div>
+                        <div class="panel-body relative" id="videoremote1">
+                            <video autoplay playsinline="true"></video>
+                        </div>
+                    </div>
+                </div>
+                &lt;!&ndash;Remote Video #2&ndash;&gt;
+                <div class="col-md-6">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">Remote Video #2
+                                <span class="label label-info " id="remote2">
+
+                                </span>
+                            </h3>
+                        </div>
+                        <div class="panel-body relative" id="videoremote2">
+                            <video autoplay playsinline="true"></video>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row" >
+                <div class="col-md-6">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">Remote Video #3
+                                <span class="label label-info " id="remote3">
+
+                                </span>
+                            </h3>
+                        </div>
+                        <div class="panel-body relative" id="videoremote3">
+                            <video autoplay playsinline="true"></video>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">Remote Video #4
+                                <span class="label label-info " id="remote4">
+
+                                </span>
+                            </h3>
+                        </div>
+                        <div class="panel-body relative" id="videoremote4">
+                            <video autoplay playsinline="true"></video>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>-->
+
+        <div class="container" id="videos">
+            <div class="col-md-4">
+                <!--main video-->
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Local Video
+                            <span class="label label-primary" id="main-video-username">
+
+                                </span>
+                            <div class="btn-group btn-group-xs pull-right">
+                                <div class="btn-group btn-group-xs">
+                                    <button id="bitrateset" autocomplete="off"
+                                            class="btn btn-primary dropdown-toggle"
+                                            data-toggle="dropdown">
+                                        Bandwidth<span class="caret"></span>
+                                    </button>
+                                    <ul id="bitrate" class="dropdown-menu" role="menu">
+                                        <li><a href="#" id="0">No limit</a></li>
+                                        <li><a href="#" id="128">Cap to 128kbit</a></li>
+                                        <li><a href="#" id="256">Cap to 256kbit</a></li>
+                                        <li><a href="#" id="512">Cap to 512kbit</a></li>
+                                        <li><a href="#" id="1024">Cap to 1mbit</a></li>
+                                        <li><a href="#" id="1500">Cap to 1.5mbit</a></li>
+                                        <li><a href="#" id="2000">Cap to 2mbit</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </h3>
+                    </div>
+
+                    <div class="panel-body" id="main-panel">
+                        <video class="rounded centered" id="main-video" width="100%" height="100%"
+                               autoplay playsinline muted="muted">
+                        </video>
+
+                        <button class="btn btn-warning btn-xs" id="mute"
+                                style="position: absolute; bottom: 0px; left: 0px; margin: 15px;">
+                            Mute
+                        </button>
+
+                        <button class="btn btn-warning btn-xs" id="unpublish"
+                                style="position: absolute; bottom: 0px; right: 0px; margin: 15px;">
+                            Unpublish
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-8">
+                <div class="row">
+                    <!--Remote Video #1-->
+                    <div class="col-md-4 hide" id="remote-div-1">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title">Remote Video #1
+                                    <span class="label label-info" id="remote1">
+
+                                </span>
+                                </h3>
+                            </div>
+                            <div class="panel-body relative" id="remote-panel-1">
+
+                                <video class="rounded centered relative" id="remote-video-1"
+                                       width="100%" height="100%" autoplay playsinline>
+                                </video>
+
+                                <span class="label label-primary" id="remote-curres-1"
+                                      style="position: absolute; bottom: 0px; left: 0px; margin: 15px;">
+                                </span>
+                                <span class="label label-info" id="remote-curbitrate-1"
+                                      style="position: absolute; bottom: 0px; right: 0px; margin: 15px;">
+                                </span>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4  hide" id="remote-div-2">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title">Remote Video #2
+                                    <span class="label label-info" id="remote2">
+
+                                </span></h3>
+                            </div>
+                            <div class="panel-body relative" id="remote-panel-2">
+                                <video class="rounded centered relative" id="remote-video-2"
+                                       width="100%" height="100%" autoplay playsinline>
+                                </video>
+
+                                <span class="label label-primary" id="remote-curres-2"
+                                      style="position: absolute; bottom: 0px; left: 0px; margin: 15px;">
+                                </span>
+                                <span class="label label-info" id="remote-curbitrate-2"
+                                      style="position: absolute; bottom: 0px; right: 0px; margin: 15px;">
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4  hide" id="remote-div-3">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title">Remote Video #3
+                                    <span class="label label-info" id="remote3">
+
+                                </span></h3>
+                            </div>
+                            <div class="panel-body relative" id="remote-panel-3">
+                                <video class="rounded centered relative" id="remote-video-3"
+                                       width="100%" height="100%" autoplay playsinline>
+                                </video>
+
+                                <span class="label label-primary" id="remote-curres-3"
+                                      style="position: absolute; bottom: 0px; left: 0px; margin: 15px;">
+                                </span>
+                                <span class="label label-info" id="remote-curbitrate-3"
+                                      style="position: absolute; bottom: 0px; right: 0px; margin: 15px;">
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <!--下面一行-->
+                <div class="row">
+                    <!--remote-panel-3-->
+                    <div class="col-md-4  hide" id="remote-div-4">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title">Remote Video #4
+                                    <span class="label label-info" id="remote4">
+
+                                </span>
+                                </h3>
+                            </div>
+                            <div class="panel-body relative" id="remote-panel-4">
+                                <video class="rounded centered relative" id="remote-video-4"
+                                       width="100%" height="100%" autoplay playsinline>
+                                </video>
+
+                                <span class="label label-primary" id="remote-curres-4"
+                                      style="position: absolute; bottom: 0px; left: 0px; margin: 15px;">
+                                </span>
+                                <span class="label label-info" id="remote-curbitrate-4"
+                                      style="position: absolute; bottom: 0px; right: 0px; margin: 15px;">
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <!--remote-panel-4-->
+                    <div class="col-md-4  hide" id="remote-div-5">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title">Remote Video #5
+                                    <span class="label label-info" id="remote5">
+
+                                </span>
+                                </h3>
+                            </div>
+                            <div class="panel-body relative" id="remote-panel-5">
+                                <video class="rounded centered relative" id="remote-video-5"
+                                       width="100%" height="100%" autoplay playsinline>
+                                </video>
+
+                                <span class="label label-primary" id="remote-curres-5"
+                                      style="position: absolute; bottom: 0px; left: 0px; margin: 15px;">
+                                </span>
+                                <span class="label label-info" id="remote-curbitrate-5"
+                                      style="position: absolute; bottom: 0px; right: 0px; margin: 15px;">
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <!--remote-panel-5-->
+                    <div class="col-md-4  hide" id="remote-div-6">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title">Remote Video #6
+                                    <span class="label label-info" id="remote6">
+
+                                </span>
+                                </h3>
+                            </div>
+                            <div class="panel-body relative" id="remote-panel-6">
+                                <video class="rounded centered relative" id="remote-video-6"
+                                       width="100%" height="100%" autoplay playsinline>
+                                </video>
+
+                                <span class="label label-primary" id="remote-curres-6"
+                                      style="position: absolute; bottom: 0px; left: 0px; margin: 15px;">
+                                </span>
+                                <span class="label label-info" id="remote-curbitrate-6"
+                                      style="position: absolute; bottom: 0px; right: 0px; margin: 15px;">
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="footer">
+</div>
+
+
+</body>
+</html>
